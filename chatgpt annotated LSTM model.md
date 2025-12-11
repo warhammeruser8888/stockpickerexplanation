@@ -59,10 +59,14 @@ def get_stock_data(ticker, start_date='2010-01-01'):
 ## 5. Calculating Financial Ratios
 
 ```python
-def calculate_ratios(stock_data):
-    stock_data['P/E'] = stock_data['Close'] / stock_data['Close'].rolling(window=12).mean()
-    stock_data['ROE'] = stock_data['Close'].pct_change() * 100
-    stock_data['Debt-to-Equity'] = stock_data['Close'] / stock_data['Open']
+def calculate_ratios(stock_data, ticker):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+    stock_data['P/E'] = info.get("trailingPE", pd.NA)  # trailing P/E
+    stock_data['ROE'] = info.get("returnOnEquity", pd.NA)  # ROE as decimal
+    stock_data['Debt-to-Equity'] = info.get("debtToEquity", pd.NA)  # Debt-to-Equity
+    stock_data['P/E'] = stock_data['P/E'].clip(lower=0, upper=50)
+    stock_data['ROE'] = stock_data['ROE'] * 100  # convert to percentage
     return stock_data
 ```
 
